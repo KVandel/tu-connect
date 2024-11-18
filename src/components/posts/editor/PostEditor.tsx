@@ -10,9 +10,15 @@ import { useSession } from "@/app/(main)/SessionProvider";
 
 import React from "react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useSubmitPostMutation } from "@/components/posts/editor/mutations";
+import LoadingButton from "@/components/LoadingButton";
+import { mutate } from "effect/HashMap";
 
 export default function PostEditor() {
   const { user } = useSession();
+
+  const mutation = useSubmitPostMutation();
 
   const editor = useEditor({
     extensions: [
@@ -24,6 +30,7 @@ export default function PostEditor() {
         placeholder: "What's on ur mind? Sweet-heart",
       }),
     ],
+
     immediatelyRender: false,
   });
   const input =
@@ -32,7 +39,11 @@ export default function PostEditor() {
     }) || "";
 
   async function onSubmit() {
-    await submitPost(input);
+    mutation.mutate(input, {
+      onSuccess: () => {
+        editor?.commands.clearContent();
+      },
+    });
   }
 
   return (
@@ -41,17 +52,20 @@ export default function PostEditor() {
         <UserAvatar avatarUrl={user.avatarUrl} className="hidden sm:inline" />
         <EditorContent
           editor={editor}
-          className="w-full max-h-[20rem] overflow-y-auto bg-background rounded-2xl px-5 py-3 "
+          className={cn(
+            "w-full max-h-[20rem] overflow-y-auto bg-background rounded-lg px-5 py-3 ",
+          )}
         />
       </div>
       <div>
-        <Button
+        <LoadingButton
           onClick={onSubmit}
+          loading={mutation.isPending}
           disabled={!input.trim()}
           className="min-w-20 "
         >
           Post
-        </Button>
+        </LoadingButton>
       </div>
     </div>
   );

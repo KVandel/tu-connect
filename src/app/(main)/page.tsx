@@ -1,28 +1,29 @@
 import PostEditor from "@/components/posts/editor/PostEditor";
-import Post from "@/components/posts/Post";
-import prisma from "@/lib/prisma";
 
-export default async function Home() {
-  const posts = await prisma.post.findMany({
-    include: {
-      user: {
-        select: {
-          username: true,
-          displayName: true,
-          avatarUrl: true,
-        },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+import TrendsSidebar from "@/components/TrendsSidebar";
+import ForYouFeed from "@/app/(main)/ForYouFeed";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import FollowingFeed from "@/app/(main)/FollowingFeed";
+
+export default function Home() {
   return (
-    <main>
-      <div>
+    <main className="w-full min-w-0 flex gap-5">
+      <div className="w-full min-w-0 space-y-5">
         <PostEditor />
-        {posts.map((post) => (
-          <Post key={post.id} post={post} />
-        ))}
+        <Tabs defaultValue="for-you">
+          <TabsList>
+            <TabsTrigger value="for-you">For you</TabsTrigger>
+            <TabsTrigger value="following">Following</TabsTrigger>
+          </TabsList>
+          <TabsContent value="for-you">
+            <ForYouFeed />
+          </TabsContent>
+          <TabsContent value="following">
+            <FollowingFeed />
+          </TabsContent>
+        </Tabs>
       </div>
+      <TrendsSidebar />
     </main>
   );
 }

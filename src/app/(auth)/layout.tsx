@@ -1,4 +1,4 @@
-import { validateRequest } from "@/lib/auth";
+import { validateRequest } from "@/auth";
 import { redirect } from "next/navigation";
 import React from "react";
 
