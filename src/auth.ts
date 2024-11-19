@@ -1,8 +1,9 @@
 import { PrismaAdapter } from "@lucia-auth/adapter-prisma";
+import { Google } from "arctic";
 import { Lucia, Session, User } from "lucia";
-import prisma from "@/lib/prisma";
-import { cache } from "react";
 import { cookies } from "next/headers";
+import { cache } from "react";
+import prisma from "./lib/prisma";
 
 const adapter = new PrismaAdapter(prisma.session, prisma.user);
 
@@ -39,24 +40,32 @@ interface DatabaseUserAttributes {
   googleId: string | null;
 }
 
+export const google = new Google(
+  process.env.GOOGLE_CLIENT_ID!,
+  process.env.GOOGLE_CLIENT_SECRET!,
+  `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/google`,
+);
+
 export const validateRequest = cache(
   async (): Promise<
     { user: User; session: Session } | { user: null; session: null }
   > => {
     const sessionId =
       (await cookies()).get(lucia.sessionCookieName)?.value ?? null;
+
     if (!sessionId) {
       return {
         user: null,
         session: null,
       };
     }
+
     const result = await lucia.validateSession(sessionId);
-    //to delete await
+
     try {
       if (result.session && result.session.fresh) {
         const sessionCookie = lucia.createSessionCookie(result.session.id);
-        cookies().set(
+        (await cookies()).set(
           sessionCookie.name,
           sessionCookie.value,
           sessionCookie.attributes,
@@ -64,7 +73,7 @@ export const validateRequest = cache(
       }
       if (!result.session) {
         const sessionCookie = lucia.createBlankSessionCookie();
-        cookies().set(
+        (await cookies()).set(
           sessionCookie.name,
           sessionCookie.value,
           sessionCookie.attributes,

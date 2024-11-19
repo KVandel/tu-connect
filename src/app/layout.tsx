@@ -6,6 +6,9 @@ import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import Providers from "@/app/(main)/provider";
 import ReactQueryProvider from "@/app/ReactQueryProvider";
+import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
+import { fileRouter } from "@/app/api/uploadthing/core";
+import { extractRouterConfig } from "uploadthing/server";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -20,8 +23,8 @@ const geistMono = localFont({
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | TU Connect",
-    default: "TU connect",
+    template: "%s | K-Connect",
+    default: "K-Connect",
   },
   description: "The ULTIMATE APP FOR GOSSIP",
 };
@@ -34,6 +37,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning={true}>
       <body className={`${geistSans.variable} ${geistMono.variable} `}>
+        <NextSSRPlugin routerConfig={extractRouterConfig(fileRouter)} />
         <ReactQueryProvider>
           <Providers>{children}</Providers>
         </ReactQueryProvider>

@@ -9,7 +9,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export async function login(
-  credentials: LoginValues,
+    credentials: LoginValues,
 ): Promise<{ error: string }> {
   try {
     const { username, password } = loginSchema.parse(credentials);
@@ -44,12 +44,10 @@ export async function login(
 
     const session = await lucia.createSession(existingUser.id, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    cookies().set(
-      sessionCookie.name,
-      sessionCookie.value,
-      sessionCookie.attributes,
+    (await cookies()).set(
+        sessionCookie.name,
+        sessionCookie.value,
+        sessionCookie.attributes,
     );
 
     return redirect("/");

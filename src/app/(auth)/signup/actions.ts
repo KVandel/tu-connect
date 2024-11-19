@@ -1,12 +1,14 @@
 "use server";
-import { signUpSchema, SignUpValues } from "@/lib/validation";
-import { generateIdFromEntropySize } from "lucia";
-import { hash } from "@node-rs/argon2";
-import prisma from "@/lib/prisma";
-import { cookies } from "next/headers";
+
 import { lucia } from "@/auth";
-import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
+import streamServerClient from "@/lib/stream";
+import { signUpSchema, SignUpValues } from "@/lib/validation";
+import { hash } from "@node-rs/argon2";
+import { generateIdFromEntropySize } from "lucia";
 import { isRedirectError } from "next/dist/client/components/redirect";
+import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function signUp(
   credentials: SignUpValues,
@@ -31,9 +33,13 @@ export async function signUp(
         },
       },
     });
+
     if (existingUsername) {
-      return { error: "Username already exist" };
+      return {
+        error: "Username already taken",
+      };
     }
+
     const existingEmail = await prisma.user.findFirst({
       where: {
         email: {
@@ -42,25 +48,33 @@ export async function signUp(
         },
       },
     });
+
     if (existingEmail) {
-      return { error: "Email already exist" };
+      return {
+        error: "Email already taken",
+      };
     }
 
-    await prisma.user.create({
-      data: {
+    await prisma.$transaction(async (tx) => {
+      await tx.user.create({
+        data: {
+          id: userId,
+          username,
+          displayName: username,
+          email,
+          passwordHash,
+        },
+      });
+      await streamServerClient.upsertUser({
         id: userId,
         username,
-        displayName: username,
-        email,
-        passwordHash,
-      },
+        name: username,
+      });
     });
 
     const session = await lucia.createSession(userId, {});
     const sessionCookie = lucia.createSessionCookie(session.id);
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
-    cookies().set(
+    (await cookies()).set(
       sessionCookie.name,
       sessionCookie.value,
       sessionCookie.attributes,
@@ -71,7 +85,7 @@ export async function signUp(
     if (isRedirectError(error)) throw error;
     console.error(error);
     return {
-      error: " Something went wrong. Try again later",
+      error: "Something went wrong. Please try again.",
     };
   }
 }
