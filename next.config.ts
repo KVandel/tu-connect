@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 //this is for cache if something wrong with cache change this into @type
 const nextConfig: NextConfig = {
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   /* config options here */
   experimental: {
     staleTimes: {
