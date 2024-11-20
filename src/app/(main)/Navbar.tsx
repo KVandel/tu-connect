@@ -9,8 +9,11 @@ export default function Navbar() {
         <Link href="/" className="text-2xl font-bold text-primary">
           K-CONNECT
         </Link>
-        <SearchField />
-        <UserButton className="sm:ms-auto" />
+        <div className="hidden lg:block">
+          <SearchField />
+        </div>
+
+        <UserButton className="sm:ms-auto ml-auto" />
       </div>
     </header>
   );
