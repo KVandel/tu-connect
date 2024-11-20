@@ -1,23 +1,35 @@
+import { useSession } from "@/app/(main)/SessionProvider";
 import { useToast } from "@/hooks/use-toast";
+import { PostsPage } from "@/lib/types";
 import {
   InfiniteData,
+  QueryFilters,
   useMutation,
   useQueryClient,
-  QueryFilters,
 } from "@tanstack/react-query";
-import { submitPost } from "@/components/posts/editor/actions";
-
-import { PostsPage } from "@/lib/types";
+import { submitPost } from "./actions";
 
 export function useSubmitPostMutation() {
   const { toast } = useToast();
 
   const queryClient = useQueryClient();
 
+  const { user } = useSession();
+
   const mutation = useMutation({
     mutationFn: submitPost,
     onSuccess: async (newPost) => {
-      const queryFilter: QueryFilters = { queryKey: ["post-feed", "for-you"] };
+      const queryFilter = {
+        queryKey: ["post-feed"],
+        predicate(query) {
+          return (
+            query.queryKey.includes("for-you") ||
+            (query.queryKey.includes("user-posts") &&
+              query.queryKey.includes(user.id))
+          );
+        },
+      } satisfies QueryFilters;
+
       await queryClient.cancelQueries(queryFilter);
 
       queryClient.setQueriesData<InfiniteData<PostsPage, string | null>>(
@@ -31,7 +43,7 @@ export function useSubmitPostMutation() {
               pages: [
                 {
                   posts: [newPost, ...firstPage.posts],
-                  newCursor: firstPage.nextCursor,
+                  nextCursor: firstPage.nextCursor,
                 },
                 ...oldData.pages.slice(1),
               ],
@@ -43,21 +55,22 @@ export function useSubmitPostMutation() {
       queryClient.invalidateQueries({
         queryKey: queryFilter.queryKey,
         predicate(query) {
-          return !query.state.data;
+          return queryFilter.predicate(query) && !query.state.data;
         },
       });
 
       toast({
-        description: "Post created! Haha!",
+        description: "Post created",
       });
     },
-    onError: (error) => {
+    onError(error) {
       console.error(error);
       toast({
         variant: "destructive",
-        description: `Failed to post. Sorry, I don't have a GOOGLE LEVEL server. Please be patient!`,
+        description: "Failed to post. Please try again.",
       });
     },
   });
+
   return mutation;
 }
