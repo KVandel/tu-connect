@@ -4,12 +4,16 @@ import { FollowerInfo } from "@/lib/types";
 
 export async function GET(
   req: Request,
-  {
-    params: { userId },
-  }: {
-    params: { userId: string };
-  },
+  props: {
+    params: Promise<{ userId: string }>;
+  }
 ) {
+  const params = await props.params;
+
+  const {
+    userId
+  } = params;
+
   try {
     const { user: loggedInUser } = await validateRequest();
     if (!loggedInUser) {
@@ -49,10 +53,13 @@ export async function GET(
   }
 }
 
-export async function POST(
-  req: Request,
-  { params: { userId } }: { params: { userId: string } },
-) {
+export async function POST(req: Request, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
+
+  const {
+    userId
+  } = params;
+
   try {
     const { user: loggedInUser } = await validateRequest();
     if (!loggedInUser) {
@@ -80,10 +87,13 @@ export async function POST(
   }
 }
 
-export async function DELETE(
-  req: Request,
-  { params: { userId } }: { params: { userId: string } },
-) {
+export async function DELETE(req: Request, props: { params: Promise<{ userId: string }> }) {
+  const params = await props.params;
+
+  const {
+    userId
+  } = params;
+
   try {
     const { user: loggedInUser } = await validateRequest();
     if (!loggedInUser) {

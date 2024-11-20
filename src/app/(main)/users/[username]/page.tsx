@@ -7,7 +7,7 @@ import UserAvatar from "@/components/UserAvatar";
 import prisma from "@/lib/prisma";
 import { FollowerInfo, getUserDataSelect, UserData } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
-import { formatDate } from "date-fns";
+import { format as formatDate } from "date-fns";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { cache } from "react";
@@ -15,9 +15,10 @@ import EditProfileButton from "./EditProfileButton";
 import UserPosts from "./UserPosts";
 
 interface PageProps {
-  params: { username: string };
+  params: Promise<{ username: string }>;
 }
 
+// Fetch user data from the database
 const getUser = cache(async (username: string, loggedInUserId: string) => {
   const user = await prisma.user.findFirst({
     where: {
@@ -30,26 +31,34 @@ const getUser = cache(async (username: string, loggedInUserId: string) => {
   });
 
   if (!user) notFound();
-
   return user;
 });
 
-export async function generateMetadata({
-  params,
-}: PageProps): Promise<Metadata> {
-  const { username } = params; // Destructure inside the function
-  const { user: loggedInUser } = await validateRequest();
+// Generate metadata for the page
+export async function generateMetadata(props: PageProps): Promise<Metadata> {
+  const params = await props.params;
 
+  const {
+    username
+  } = params;
+
+  const { user: loggedInUser } = await validateRequest();
   if (!loggedInUser) return {};
 
   const user = await getUser(username, loggedInUser.id);
-
   return {
     title: `${user.displayName} (@${user.username})`,
   };
 }
-export default async function Page({ params }: PageProps) {
-  const { username } = params; // Destructure inside the function
+
+// Main page component
+export default async function Page(props: PageProps) {
+  const params = await props.params;
+
+  const {
+    username
+  } = params;
+
   const { user: loggedInUser } = await validateRequest();
 
   if (!loggedInUser) {
@@ -78,6 +87,7 @@ export default async function Page({ params }: PageProps) {
   );
 }
 
+// User profile component
 interface UserProfileProps {
   user: UserData;
   loggedInUserId: string;
@@ -104,7 +114,9 @@ async function UserProfile({ user, loggedInUserId }: UserProfileProps) {
             <h1 className="text-3xl font-bold">{user.displayName}</h1>
             <div className="text-muted-foreground">@{user.username}</div>
           </div>
-          <div>Member since {formatDate(user.createdAt, "MMM d, yyyy")}</div>
+          <div>
+            Member since {formatDate(new Date(user.createdAt), "MMM d, yyyy")}
+          </div>
           <div className="flex items-center gap-3">
             <span>
               Posts:{" "}

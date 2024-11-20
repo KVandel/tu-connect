@@ -3,10 +3,8 @@ import prisma from "@/lib/prisma";
 import { CommentsPage, getCommentDataInclude } from "@/lib/types";
 import { NextRequest } from "next/server";
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { postId: string } }, // <- Changed here to keep params intact
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ postId: string }> }) {
+  const params = await props.params;
   try {
     // Await the params before using them
     const { postId } = params;
