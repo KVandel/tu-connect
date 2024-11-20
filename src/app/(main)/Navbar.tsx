@@ -9,7 +9,7 @@ export default function Navbar() {
         <Link href="/" className="text-2xl font-bold text-primary">
           K-CONNECT
         </Link>
-        <div className="hidden lg:block">
+        <div className=" w-48 lg:block flex-1">
           <SearchField />
         </div>
 
