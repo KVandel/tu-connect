@@ -1,6 +1,9 @@
 import PostEditor from "@/components/posts/editor/PostEditor";
 
-import TrendsSidebar from "@/components/TrendsSidebar";
+import TrendsSidebar, {
+  TrendingTopics,
+  WhoToFollow,
+} from "@/components/TrendsSidebar";
 import ForYouFeed from "@/app/(main)/ForYouFeed";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import FollowingFeed from "@/app/(main)/FollowingFeed";
@@ -12,30 +15,13 @@ export default function Home() {
         <PostEditor />
         <Tabs defaultValue="for-you">
           <TabsList>
-            <div className="flex-1  text-center ">
-              <TabsTrigger
-                value="for-you"
-                className="py-3 px-5 text-center rounded-lg"
-              >
-                For you
-              </TabsTrigger>
-            </div>
-            <div className="flex-1 text-center ">
-              <TabsTrigger
-                value="following"
-                className="py-3 px-5 text-center rounded-lg"
-              >
-                Following
-              </TabsTrigger>
-            </div>
-            <div className="block lg:hidden flex-1 text-center">
-              <TabsTrigger
-                value="trends"
-                className="py-3 px-5 text-center rounded-lg"
-              >
-                Trends
-              </TabsTrigger>
-            </div>
+            <TabsTrigger value="for-you">For you</TabsTrigger>
+
+            <TabsTrigger value="following">Following</TabsTrigger>
+
+            <TabsTrigger value="trends" className="block lg:hidden">
+              Trends
+            </TabsTrigger>
           </TabsList>
           <TabsContent value="for-you">
             <ForYouFeed />
@@ -43,10 +29,11 @@ export default function Home() {
           <TabsContent value="following">
             <FollowingFeed />
           </TabsContent>
-          <TabsContent value="trends">
-            <div className="block lg:hidden">
-              <TrendsSidebar />
-            </div>
+          <TabsContent value="trends" className="">
+            <>
+              <WhoToFollow />
+              <TrendingTopics />
+            </>
           </TabsContent>
         </Tabs>
       </div>

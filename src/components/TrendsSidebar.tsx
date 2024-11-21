@@ -13,7 +13,7 @@ import UserTooltip from "@/components/UserTooltip";
 
 export default function TrendsSidebar() {
   return (
-    <div className="sticky top-[5.25rem] hidden  md:block lg:w-80  h-fit flex-none space-y-5">
+    <div className="sticky top-[5.25rem]  hidden md:block lg:w-80  h-fit flex-none space-y-5">
       <Suspense fallback={<Loader2 className="mx-auto animate-spin" />}>
         <WhoToFollow />
         <TrendingTopics />
@@ -22,7 +22,7 @@ export default function TrendsSidebar() {
   );
 }
 
-async function WhoToFollow() {
+export async function WhoToFollow() {
   const { user } = await validateRequest();
 
   if (!user) return null;
@@ -98,7 +98,7 @@ const getTrendingTopics = unstable_cache(
   },
 );
 
-async function TrendingTopics() {
+export async function TrendingTopics() {
   const trendingTopics = await getTrendingTopics();
   return (
     <div className="space-y-5 rounded-2xl bg-card p-5 shadow-sm">
